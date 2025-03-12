@@ -1,0 +1,51 @@
+- name: Create an Azure Virtual Machine
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Create resource group
+      azure.azcollection.azure_rm_resourcegroup:
+        name: myResourceGroup
+        location: eastus
+
+    - name: Create virtual network
+      azure.azcollection.azure_rm_virtualnetwork:
+        resource_group: myResourceGroup
+        name: myVNet
+        address_prefixes: "10.0.0.0/16"
+
+    - name: Create subnet
+      azure.azcollection.azure_rm_subnet:
+        resource_group: myResourceGroup
+        name: mySubnet
+        virtual_network: myVNet
+        address_prefix: "10.0.1.0/24"
+
+    - name: Create public IP
+      azure.azcollection.azure_rm_publicip:
+        resource_group: myResourceGroup
+        name: myPublicIP
+        allocation_method: Static
+
+    - name: Create network interface
+      azure.azcollection.azure_rm_networkinterface:
+        resource_group: myResourceGroup
+        name: myNIC
+        virtual_network: myVNet
+        subnet: mySubnet
+        public_ip_name: myPublicIP
+
+    - name: Create VM
+      azure.azcollection.azure_rm_virtualmachine:
+        resource_group: myResourceGroup
+        name: myVM
+        vm_size: Standard_B1s
+        admin_username: azureuser
+        admin_password: "Password1234!"
+        network_interfaces: myNIC
+        image:
+          offer: UbuntuServer
+          publisher: Canonical
+          sku: "24-04-LTS"
+          version: latest
